@@ -3,356 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beni Ne Kadar Tanıyorsun? - Furkan'ın Testi</title>
+    <title>Sana Özel Bir Mesaj</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://css.gg/css?=|instagram|heart" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Kaçan butonun scrollbar oluşturmasını engeller */
         }
-        .screen {
-            display: none;
+        .gradient-text {
+            background: linear-gradient(to right, #8B5CF6, #EC4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
         }
-        .screen.active {
-            display: block;
+        /* Hayır butonunun başlangıçta absolute olmamasını sağlıyoruz */
+        #noButton {
+            transition: all 0.2s ease-out;
         }
-        /* Animasyonlar */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
         }
-        .answer-btn {
-            transition: all 0.2s ease-in-out;
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
-        .answer-btn.correct {
-            background-color: #22c55e !important; /* green-500 */
-            color: white !important;
-            transform: scale(1.05);
-        }
-        .answer-btn.incorrect {
-            background-color: #ef4444 !important; /* red-500 */
-            color: white !important;
-            opacity: 0.7;
+        .pop-in {
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen">
 
-    <div class="w-full max-w-lg mx-auto">
-        <!-- Giriş Ekranı -->
-        <div id="welcome-screen" class="screen active text-center bg-gray-800 p-8 rounded-2xl shadow-2xl fade-in">
-            <h1 class="text-4xl font-bold text-cyan-400 mb-4">Beni Ne Kadar Tanıyorsun?</h1>
-            <p class="text-gray-300 mb-8">Bakalım en iyi arkadaşım kimmiş! Adını ve soyadını girerek teste başla.</p>
-            <input type="text" id="player-name" placeholder="Adın Soyadın" class="w-full p-4 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4">
-            <button id="start-btn" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-4 rounded-lg transition-colors duration-300">Teste Başla!</button>
-            <button id="show-leaderboard-from-welcome" class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-cyan-300 font-bold py-2 rounded-lg transition-colors duration-300">Skor Tablosunu Gör</button>
-        </div>
+    <div class="container mx-auto px-6 py-16 max-w-lg text-center">
 
-        <!-- Test Ekranı -->
-        <div id="quiz-screen" class="screen bg-gray-800 p-8 rounded-2xl shadow-2xl">
-            <div id="progress-container" class="mb-4 text-right text-gray-400">
-                <span id="question-counter"></span>
-                <span class="ml-4 font-semibold">Skor: <span id="score-counter">0</span></span>
-            </div>
-            <h2 id="question-text" class="text-2xl font-semibold mb-6 min-h-[90px]"></h2>
-            <div id="answers-container" class="grid grid-cols-1 gap-4">
-                <!-- Cevaplar buraya eklenecek -->
-            </div>
-        </div>
+        <!-- Başlangıç ve Soru -->
+        <div id="proposalSection" class="fade-in-up">
+            <h1 class="text-4xl md:text-6xl font-black mb-4 gradient-text">Merhaba!</h1>
+            <p class="text-xl md:text-2xl text-gray-400 mb-2">Ben Furkan Solak.</p>
+            <p class="text-2xl md:text-3xl text-white font-bold mb-12">Sana basit bir sorum var...</p>
 
-        <!-- Sonuç Ekranı -->
-        <div id="results-screen" class="screen text-center bg-gray-800 p-8 rounded-2xl shadow-2xl">
-            <h1 class="text-4xl font-bold text-cyan-400 mb-4">Test Bitti!</h1>
-            <p class="text-2xl mb-2">Skorun:</p>
-            <p id="final-score" class="text-6xl font-bold mb-8"></p>
-            <p id="result-message" class="text-lg mb-8"></p>
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button id="show-leaderboard-btn" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition-colors duration-300">Skor Tablosu</button>
-                <button id="restart-btn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-lg transition-colors duration-300">Tekrar Dene</button>
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-10">Benimle bir kahve içer misin?</h2>
+
+            <!-- Butonlar için alan. -->
+            <div class="relative flex flex-row items-center justify-center gap-4 h-48">
+                <!-- Evet Butonu -->
+                <button id="yesButton" class="w-40 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    Evet!
+                </button>
+
+                <!-- Hayır Butonu (Kaçan) -->
+                <button id="noButton" class="w-40 bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-8 rounded-full shadow-lg">
+                    Hayır
+                </button>
             </div>
         </div>
 
-        <!-- Skor Tablosu Ekranı -->
-        <div id="leaderboard-screen" class="screen bg-gray-800 p-8 rounded-2xl shadow-2xl">
-            <h1 class="text-4xl font-bold text-cyan-400 mb-6 text-center">Skor Tablosu</h1>
-            <div id="leaderboard-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                <!-- Skorlar buraya eklenecek -->
+        <!-- Evet Cevabı Sonrası Ekranı -->
+        <div id="successSection" class="hidden">
+            <div class="pop-in">
+                <i class="gg-heart text-pink-500" style="--ggs:3; margin: 0 auto 2rem;"></i>
+                <h1 class="text-4xl md:text-5xl font-black mb-4 text-white">Harika!</h1>
+                <p class="text-xl text-gray-300 mb-8">
+                    Bu cevabına çok sevindim.<br>Detayları konuşmak için bana yazabilirsin.
+                </p>
+                <a href="https://www.instagram.com/fukransolak._" 
+                   target="_blank"
+                   class="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <i class="gg-instagram"></i>
+                    <span>Instagram'dan Yaz</span>
+                </a>
             </div>
-            <button id="back-to-welcome-btn" class="mt-8 w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded-lg transition-colors duration-300">Ana Sayfaya Dön</button>
         </div>
 
-        <!-- Yükleniyor Ekranı -->
-        <div id="loading-spinner" class="screen text-center p-8">
-            <svg class="animate-spin h-10 w-10 text-cyan-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-4">Yükleniyor...</p>
-        </div>
     </div>
 
-    <script type="module">
-        // Firebase modüllerini import et
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, serverTimestamp, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    <script>
+        const proposalSection = document.getElementById('proposalSection');
+        const successSection = document.getElementById('successSection');
+        const yesButton = document.getElementById('yesButton');
+        const noButton = document.getElementById('noButton');
+        let isNoButtonInitialized = false;
 
-        // --- KENDİ SORULARINI BURAYA YAZ ---
-        const questions = [
-            {
-                question: "En sevdiğim renk hangisi?",
-                answers: ["Mavi", "Siyah", "Yeşil", "Kırmızı"],
-                correct: 0 // Mavi
-            },
-            {
-                question: "Hangi takımı tutuyorum?",
-                answers: ["Galatasaray", "Fenerbahçe", "Beşiktaş", "Hiçbiri"],
-                correct: 1 // Fenerbahçe
-            },
-            {
-                question: "En sevdiğim yemek nedir?",
-                answers: ["Pizza", "İskender", "Hamburger", "Lahmacun"],
-                correct: 1 // İskender
-            },
-            {
-                question: "Hayalimdeki meslek hangisiydi?",
-                answers: ["Pilot", "Doktor", "Sporcu", "Mühendis"],
-                correct: 2 // Sporcu
-            },
-            {
-                question: "Boş zamanlarımda genelde ne yaparım?",
-                answers: ["Oyun oynarım", "Dizi izlerim", "Spor yaparım", "Boş işlerle uğraşırım"],
-                correct: 3 // Boş işlerle uğraşırım
-            }
-        ];
-        // ------------------------------------
+        // Evet butonuna tıklanınca
+        yesButton.addEventListener('click', () => {
+            proposalSection.style.display = 'none';
+            successSection.style.display = 'block';
+        });
 
-        // Firebase yapılandırması
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'best-friend-quiz';
-        
-        let app, db, auth, userId;
-        
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        } catch (e) {
-            console.error("Firebase initialization error:", e);
-            document.body.innerHTML = '<h1>Firebase yapılandırması yüklenemedi. Lütfen sayfayı yenileyin.</h1>';
+        // Hayır butonunun kaçma mekanizması (Cihaza göre ayarlandı)
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        if (isTouchDevice) {
+            // Telefonlarda: Sadece tıklandığında kaçar
+            noButton.addEventListener('click', moveButton);
+        } else {
+            // Bilgisayarlarda: Fare üzerine gelince kaçar
+            noButton.addEventListener('mouseover', moveButton);
         }
 
-        // Değişkenler
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let playerName = "";
-        const scoresCollectionRef = collection(db, `artifacts/${appId}/public/data/scores`);
+        function moveButton() {
+            const container = noButton.parentElement;
 
-        // Ekranları ve butonları seç
-        const screens = document.querySelectorAll('.screen');
-        const startBtn = document.getElementById('start-btn');
-        const playerNameInput = document.getElementById('player-name');
-        const questionText = document.getElementById('question-text');
-        const answersContainer = document.getElementById('answers-container');
-        const questionCounter = document.getElementById('question-counter');
-        const scoreCounter = document.getElementById('score-counter');
-        const finalScoreText = document.getElementById('final-score');
-        const resultMessage = document.getElementById('result-message');
-        const restartBtn = document.getElementById('restart-btn');
-        const showLeaderboardBtn = document.getElementById('show-leaderboard-btn');
-        const showLeaderboardFromWelcomeBtn = document.getElementById('show-leaderboard-from-welcome');
-        const backToWelcomeBtn = document.getElementById('back-to-welcome-btn');
-        const leaderboardList = document.getElementById('leaderboard-list');
+            // Butonla ilk etkileşimde, pozisyonunu 'absolute' yap ve kaçmaya hazırla
+            if (!isNoButtonInitialized) {
+                // Butonun mevcut konumunu al (flexbox tarafından yerleştirildiği yer)
+                const initialTop = noButton.offsetTop;
+                const initialLeft = noButton.offsetLeft;
 
-        // Fonksiyonlar
-        function switchScreen(screenId) {
-            screens.forEach(screen => {
-                screen.classList.remove('active', 'fade-in');
-            });
-            const activeScreen = document.getElementById(screenId);
-            if (activeScreen) {
-                activeScreen.classList.add('active');
-                // Sadece ana ekranlar için animasyon ekle
-                if(['welcome-screen', 'results-screen', 'leaderboard-screen'].includes(screenId)) {
-                   activeScreen.classList.add('fade-in');
-                }
-            }
-        }
-
-        function startQuiz() {
-            playerName = playerNameInput.value.trim();
-            if (playerName === "") {
-                // Basit bir modal uyarı göster
-                const nameError = document.createElement('p');
-                nameError.textContent = "Lütfen adını ve soyadını gir!";
-                nameError.className = "text-red-400 mt-2";
-                if(!document.querySelector('.text-red-400')) {
-                    startBtn.insertAdjacentElement('afterend', nameError);
-                }
-                return;
-            }
-            currentQuestionIndex = 0;
-            score = 0;
-            scoreCounter.innerText = score;
-            switchScreen('quiz-screen');
-            displayQuestion();
-        }
-
-        function displayQuestion() {
-            if (currentQuestionIndex >= questions.length) {
-                showResults();
-                return;
-            }
-            const currentQuestion = questions[currentQuestionIndex];
-            questionText.innerText = currentQuestion.question;
-            questionCounter.innerText = `Soru ${currentQuestionIndex + 1} / ${questions.length}`;
-            answersContainer.innerHTML = '';
-
-            currentQuestion.answers.forEach((answer, index) => {
-                const button = document.createElement('button');
-                button.innerText = answer;
-                button.classList.add('answer-btn', 'w-full', 'p-4', 'rounded-lg', 'bg-gray-700', 'hover:bg-cyan-700', 'text-left');
-                button.onclick = () => selectAnswer(index, button);
-                answersContainer.appendChild(button);
-            });
-        }
-
-        function selectAnswer(selectedIndex, button) {
-            const currentQuestion = questions[currentQuestionIndex];
-            const isCorrect = selectedIndex === currentQuestion.correct;
-            
-            // Diğer butonları devre dışı bırak
-            Array.from(answersContainer.children).forEach(btn => btn.disabled = true);
-
-            if (isCorrect) {
-                score++;
-                scoreCounter.innerText = score;
-                button.classList.add('correct');
-            } else {
-                button.classList.add('incorrect');
-                // Doğru cevabı göster
-                answersContainer.children[currentQuestion.correct].classList.add('correct');
-            }
-
-            setTimeout(() => {
-                currentQuestionIndex++;
-                displayQuestion();
-            }, 1500);
-        }
-
-        async function showResults() {
-            switchScreen('results-screen');
-            finalScoreText.innerText = `${score} / ${questions.length}`;
-            
-            const percentage = (score / questions.length) * 100;
-            if (percentage === 100) {
-                resultMessage.innerText = "İnanılmaz! Sen benim en iyi arkadaşımsın! Her şeyi bildin!";
-            } else if (percentage >= 75) {
-                resultMessage.innerText = "Harika! Beni gerçekten çok iyi tanıyorsun.";
-            } else if (percentage >= 50) {
-                resultMessage.innerText = "Fena değil! Ama biraz daha çabalamalısın.";
-            } else {
-                resultMessage.innerText = "Hmm... Galiba daha fazla vakit geçirmeliyiz.";
-            }
-            
-            // Skoru veritabanına kaydet
-            try {
-                await addDoc(scoresCollectionRef, {
-                    name: playerName,
-                    score: score,
-                    total: questions.length,
-                    createdAt: serverTimestamp()
-                });
-            } catch (error) {
-                console.error("Skor kaydedilemedi: ", error);
-            }
-        }
-
-        function restartQuiz() {
-            playerNameInput.value = "";
-            switchScreen('welcome-screen');
-        }
-
-        async function showLeaderboard() {
-            switchScreen('loading-spinner');
-            
-            // onSnapshot ile gerçek zamanlı dinleme
-            onSnapshot(query(scoresCollectionRef), (snapshot) => {
-                const scores = [];
-                snapshot.forEach(doc => {
-                    scores.push({ id: doc.id, ...doc.data() });
-                });
-
-                // Skorları sırala (en yüksekten en düşüğe)
-                scores.sort((a, b) => {
-                    if (b.score === a.score) {
-                        // Skorlar eşitse, tarihe göre sırala (yeni olan üste)
-                        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
-                    }
-                    return b.score - a.score;
-                });
-
-                leaderboardList.innerHTML = '';
-                if (scores.length === 0) {
-                    leaderboardList.innerHTML = '<p class="text-gray-400 text-center">Henüz kimse testi çözmedi. İlk sen ol!</p>';
-                } else {
-                    scores.forEach((entry, index) => {
-                        const rankEmoji = index === 0 ? '🏆' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index + 1}.`));
-                        const item = document.createElement('div');
-                        item.className = 'flex justify-between items-center bg-gray-700 p-3 rounded-lg';
-                        item.innerHTML = `
-                            <div class="flex items-center">
-                                <span class="font-bold text-lg w-10 text-center">${rankEmoji}</span>
-                                <span class="font-semibold">${entry.name}</span>
-                            </div>
-                            <span class="font-bold text-cyan-400 text-xl">${entry.score} / ${entry.total}</span>
-                        `;
-                        leaderboardList.appendChild(item);
-                    });
-                }
-                switchScreen('leaderboard-screen');
-            }, (error) => {
-                console.error("Skor tablosu alınamadı:", error);
-                leaderboardList.innerHTML = '<p class="text-red-400 text-center">Skor tablosu yüklenirken bir hata oluştu.</p>';
-                switchScreen('leaderboard-screen');
-            });
-        }
-
-        // Olay dinleyicileri
-        startBtn.addEventListener('click', startQuiz);
-        restartBtn.addEventListener('click', restartQuiz);
-        showLeaderboardBtn.addEventListener('click', showLeaderboard);
-        showLeaderboardFromWelcomeBtn.addEventListener('click', showLeaderboard);
-        backToWelcomeBtn.addEventListener('click', () => switchScreen('welcome-screen'));
-
-        // Firebase kimlik doğrulama ve başlatma
-        (async () => {
-            try {
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) {
-                    await signInWithCustomToken(auth, token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // Absolute pozisyona geçir
+                noButton.style.position = 'absolute';
                 
-                onAuthStateChanged(auth, user => {
-                    if (user) {
-                        userId = user.uid;
-                        console.log("Current user UID:", userId);
-                    } else {
-                        console.log("No user is signed in.");
-                    }
-                });
+                // Zıplama olmaması için başlangıç pozisyonunu mevcut konumuna ayarla
+                noButton.style.top = `${initialTop}px`;
+                noButton.style.left = `${initialLeft}px`;
 
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                const welcomeScreen = document.getElementById('welcome-screen');
-                welcomeScreen.innerHTML = `<h1 class="text-2xl font-bold text-red-500">Hata!</h1><p class="text-gray-300 mt-4">Kimlik doğrulama başarısız oldu. Lütfen sayfayı yenileyin veya daha sonra tekrar deneyin.</p>`;
+                isNoButtonInitialized = true;
             }
-        })();
+
+            const yesButtonRect = yesButton.getBoundingClientRect();
+            
+            const buttonWidth = noButton.offsetWidth;
+            const buttonHeight = noButton.offsetHeight;
+
+            const maxX = container.offsetWidth - buttonWidth;
+            const maxY = container.offsetHeight - buttonHeight;
+
+            let randomX, randomY;
+            let isColliding;
+
+            // Evet butonuyla çakışmayacak bir pozisyon bulana kadar döngüye devam et
+            do {
+                randomX = Math.floor(Math.random() * maxX);
+                randomY = Math.floor(Math.random() * maxY);
+
+                // Hayır butonunun potansiyel yeni pozisyonunu (viewport'a göre) hesapla
+                const newNoButtonTop = container.getBoundingClientRect().top + randomY;
+                const newNoButtonLeft = container.getBoundingClientRect().left + randomX;
+                const newNoButtonRight = newNoButtonLeft + buttonWidth;
+                const newNoButtonBottom = newNoButtonTop + buttonHeight;
+
+                // Evet butonuyla çakışma kontrolü
+                isColliding =
+                    newNoButtonLeft < yesButtonRect.right &&
+                    newNoButtonRight > yesButtonRect.left &&
+                    newNoButtonTop < yesButtonRect.bottom &&
+                    newNoButtonBottom > yesButtonRect.top;
+
+            } while (isColliding);
+
+            // Çakışmayan pozisyonu uygula
+            noButton.style.left = `${randomX}px`;
+            noButton.style.top = `${randomY}px`;
+        }
     </script>
+
 </body>
 </html>
